@@ -1,0 +1,4 @@
+Bố:Dad,father
+Chó:dog
+Mèo:Cat,Kitty,Boss
+Ăn:Cạp, ăn.

@@ -1,4 +1,5 @@
 Bố:Dad,father
 Chó:dog
+Kiem:Find,Search
 Mèo:Cat,Kitty,Boss
-Ăn:Cạp, ăn.
+Tim:Find,Look for

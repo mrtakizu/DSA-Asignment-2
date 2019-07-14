@@ -29,6 +29,7 @@ public class DictionaryApp extends javax.swing.JFrame {
     DefaultListModel vietListModel;
     DefaultListModel engListModel;
     Word engWord, vietWord;
+    boolean isChanged = false;
 
     /**
      * Creates new form DictionaryApp
@@ -175,19 +176,18 @@ public class DictionaryApp extends javax.swing.JFrame {
 
     }
 
-    private void UpdateUI(int lang) {
-        if (lang == 0) {
-            engListModel.clear();
-            engWord = engList.getRoot();
-            Update(engWord, "English");
-            this.engWordList.setModel(engListModel);
-        }
-        if (lang == 1) {
-            vietListModel.clear();
-            vietWord = vietList.getRoot();
-            Update(vietWord, "Vietnamese");
-            this.vietWordList.setModel(vietListModel);
-        }
+    private void UpdateUI() {
+
+        engListModel.clear();
+        engWord = engList.getRoot();
+        Update(engWord, "English");
+        this.engWordList.setModel(engListModel);
+
+        vietListModel.clear();
+        vietWord = vietList.getRoot();
+        Update(vietWord, "Vietnamese");
+        this.vietWordList.setModel(vietListModel);
+
     }
 
     /**
@@ -309,7 +309,7 @@ public class DictionaryApp extends javax.swing.JFrame {
             .addGroup(topPanelLayout.createSequentialGroup()
                 .addGap(30, 30, 30)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)
                 .addComponent(btnNew, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -342,7 +342,6 @@ public class DictionaryApp extends javax.swing.JFrame {
         tabPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         tabPanel.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         tabPanel.setName(""); // NOI18N
-        tabPanel.setPreferredSize(null);
 
         engSplitPane.setDividerLocation(150);
         engSplitPane.setDividerSize(2);
@@ -392,7 +391,6 @@ public class DictionaryApp extends javax.swing.JFrame {
         tabPanel.getAccessibleContext().setAccessibleName("tab");
 
         getContentPane().add(jPanel3, java.awt.BorderLayout.CENTER);
-        jPanel3.getAccessibleContext().setAccessibleParent(null);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -419,30 +417,57 @@ public class DictionaryApp extends javax.swing.JFrame {
 
     }//GEN-LAST:event_vietWordListMouseClicked
 
+    private void DeleteInMeaning(Word wordToFind, String wordSelecting, int lang) {
+        List<String> temp;
+        if (wordToFind != null) {
+            DeleteInMeaning(wordToFind.getLeft(), wordSelecting, lang);
+            temp = wordToFind.getMeaning();
+            for (int i = 0; i < wordToFind.getMeaning().size(); i++) {
+                if (wordSelecting.equalsIgnoreCase(wordToFind.getMeaning().get(i))) {
+                    temp.remove(i);
+                    wordToFind.setMeaning(temp);
+                }
+            }
+            if (wordToFind.getMeaning().isEmpty() && lang == 0) {
+                vietWord = vietList.Delete(vietWord, wordToFind.getName());
+            } else if (wordToFind.getMeaning().isEmpty() && lang == 1) {
+                engWord = engList.Delete(engWord, wordToFind.getName());
+            }
+            DeleteInMeaning(wordToFind.getRight(), wordSelecting, lang);
+        }
+    }
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         // TODO add your handling code here:
         String vietWordSelecting = String.valueOf(vietWordList.getSelectedValue());
         String engWordSelecting = String.valueOf(engWordList.getSelectedValue());
         if (tabPanel.getSelectedIndex() == 0) {
+            DeleteInMeaning(vietWord, engWordSelecting, 0);
             engWord = engList.Delete(engWord, engWordSelecting);
-            UpdateUI(0);
-            engWordList.setSelectedIndex(engWordList.getModel().getSize() - 1);
-            engWordListMouseClicked(null);
-
         }
         if (tabPanel.getSelectedIndex() == 1) {
+            DeleteInMeaning(engWord, vietWordSelecting, 1);
             vietWord = vietList.Delete(vietWord, vietWordSelecting);
-            UpdateUI(1);
-            vietWordList.setSelectedIndex(vietWordList.getModel().getSize() - 1);
-            vietWordListMouseClicked(null);
         }
-
+        UpdateUI();
+        engWordList.setSelectedIndex(engWordList.getModel().getSize() - 1);
+        engWordListMouseClicked(null);
+        vietWordList.setSelectedIndex(vietWordList.getModel().getSize() - 1);
+        vietWordListMouseClicked(null);
 
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
         // TODO add your handling code here:
-
+        if (isChanged) {
+            int choice = JOptionPane.showConfirmDialog(rootPane, "Do you want to save?");
+            if (choice == JOptionPane.OK_OPTION) {
+                btnSaveActionPerformed(null);
+                System.exit(0);
+            }
+            if (choice == JOptionPane.NO_OPTION) {
+                System.exit(0);
+            }
+        }
     }//GEN-LAST:event_btnExitActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
@@ -465,42 +490,71 @@ public class DictionaryApp extends javax.swing.JFrame {
 
     private void btnNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNewActionPerformed
         // TODO add your handling code here:
+        StringTokenizer stk;
         try {
             List<String> means = new LinkedList<>();
+            List<String> newNameMean;
+            engWord = engList.getRoot();
+            vietWord = vietList.getRoot();
             if (tabPanel.getSelectedIndex() == 0) {
                 String word, mean;
-                word = JOptionPane.showInputDialog("Enter a new English word!");
-                mean = JOptionPane.showInputDialog("Enter meaning!");
-                engWord = engList.getRoot();
+                word = JOptionPane.showInputDialog("Enter a new English word!").trim();
+                mean = JOptionPane.showInputDialog("Enter meaning!").trim();
                 if (LookUp(engWord, word) != null) {
                     JOptionPane.showMessageDialog(rootPane, "This word is existed!");
                     return;
                 }
                 if (word != null && mean != null) {
-                    means.add(mean.trim());
+                    stk = new StringTokenizer(mean, ",");
+                    while (stk.hasMoreTokens()) {
+                        means.add(stk.nextToken().trim());
+                    }
                     engList.Add(word, means);
-                    UpdateUI(0);
-                    engWordList.setSelectedIndex(engWordList.getModel().getSize() - 1);
-                    engWordListMouseClicked(null);
+                    newNameMean = new LinkedList<>();
+                    newNameMean.add(word);
+                    String newName;
+                    for (int i = 0; i < means.size(); i++) {
+                        newName = means.get(i);
+                        Word newVietWord = LookUp(vietWord, newName);
+                        if (newVietWord == null) {
+                            vietList.Add(newName, newNameMean);
+                        }
+                    }
+                    isChanged = true;
                 }
             }
             if (tabPanel.getSelectedIndex() == 1) {
                 String word, mean;
-                word = JOptionPane.showInputDialog("Enter a new Vietnamese word!");
-                mean = JOptionPane.showInputDialog("Enter meaning!");
-                vietWord = vietList.getRoot();
+                word = JOptionPane.showInputDialog("Enter a new Vietnamese word!").trim();
+                mean = JOptionPane.showInputDialog("Enter meaning!").trim();
                 if (LookUp(vietWord, word) != null) {
                     JOptionPane.showMessageDialog(rootPane, "This word is existed!");
                     return;
                 }
                 if (word != null && mean != null) {
-                    means.add(mean.trim());
+                    stk = new StringTokenizer(mean, ",");
+                    while (stk.hasMoreTokens()) {
+                        means.add(stk.nextToken().trim());
+                    }
                     vietList.Add(word, means);
-                    UpdateUI(1);
-                    vietWordList.setSelectedIndex(vietWordList.getModel().getSize() - 1);
-                    vietWordListMouseClicked(null);
+                    newNameMean = new LinkedList<>();
+                    newNameMean.add(word);
+                    String newName;
+                    for (int i = 0; i < means.size(); i++) {
+                        newName = means.get(i);
+                        Word newEngWord = LookUp(engWord, newName);
+                        if (newEngWord == null) {
+                            engList.Add(newName, newNameMean);
+                        }
+                    }
+                    isChanged = true;
                 }
             }
+            UpdateUI();
+            engWordList.setSelectedIndex(engWordList.getModel().getSize() - 1);
+            engWordListMouseClicked(null);
+            vietWordList.setSelectedIndex(vietWordList.getModel().getSize() - 1);
+            vietWordListMouseClicked(null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -509,17 +563,37 @@ public class DictionaryApp extends javax.swing.JFrame {
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
         // TODO add your handling code here:
-        String mean = JOptionPane.showInputDialog("Enter new meaning!(Split means with comma)");
+        StringTokenizer stk;
+        String mean = null;
+        try {
+            mean = JOptionPane.showInputDialog("Enter new meaning!(Split means with comma)").trim();
+        } catch (Exception e) {
+        }
         List<String> means = new LinkedList<>();
-        if (mean != null) {
-            means.add(mean.trim());
+        List<String> newNameMean;
 
+        if (mean != null) {
+            stk = new StringTokenizer(mean, ",");
+            while (stk.hasMoreTokens()) {
+                means.add(stk.nextToken().trim());
+            }
             String vietWordSelecting = String.valueOf(vietWordList.getSelectedValue());
             String engWordSelecting = String.valueOf(engWordList.getSelectedValue());
             if (tabPanel.getSelectedIndex() == 0) {
                 engWord = engList.getRoot();
                 LookUp(engWord, engWordSelecting).setMeaning(means);
-                UpdateUI(0);
+                newNameMean = new LinkedList<>();
+                newNameMean.add(engWordSelecting);
+                String newName;
+                for (int i = 0; i < means.size(); i++) {
+                    newName = means.get(i);
+                    Word newVietWord = LookUp(vietWord, newName);
+                    if (newVietWord == null) {
+                        vietList.Add(newName, newNameMean);
+                    }
+                }
+                isChanged = true;
+                UpdateUI();
                 engWordList.setSelectedIndex(engWordList.getModel().getSize() - 1);
                 engWordListMouseClicked(null);
 
@@ -527,10 +601,22 @@ public class DictionaryApp extends javax.swing.JFrame {
             if (tabPanel.getSelectedIndex() == 1) {
                 vietWord = vietList.getRoot();
                 LookUp(vietWord, vietWordSelecting).setMeaning(means);
-                UpdateUI(1);
+                newNameMean = new LinkedList<>();
+                newNameMean.add(vietWordSelecting);
+                String newName;
+                for (int i = 0; i < means.size(); i++) {
+                    newName = means.get(i);
+                    Word newEngWord = LookUp(engWord, newName);
+                    if (newEngWord == null) {
+                        engList.Add(newName, newNameMean);
+                    }
+                }
+                isChanged = true;
+                UpdateUI();
                 vietWordList.setSelectedIndex(vietWordList.getModel().getSize() - 1);
                 vietWordListMouseClicked(null);
             }
+            
         }
     }//GEN-LAST:event_btnUpdateActionPerformed
 

@@ -1,4 +1,0 @@
-Apple:Quả táo,trái bom
-Find:Tim
-Look for:Tim
-Search:Kiem,Tim

@@ -1,5 +1,0 @@
-Bố:Dad,father
-Chó:dog
-Kiem:Find,Search
-Mèo:Cat,Kitty,Boss
-Tim:Find,Look for

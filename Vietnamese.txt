@@ -1,0 +1,4 @@
+Chó:Dog,Dog
+Khuyển:Dog
+Mèo:Cat
+Táo:Apple

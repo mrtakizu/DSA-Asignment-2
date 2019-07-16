@@ -1,5 +1,6 @@
 
 import com.sun.xml.internal.ws.util.StringUtils;
+import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -10,6 +11,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 
@@ -26,17 +28,24 @@ public class DictionaryApp extends javax.swing.JFrame {
 
     private final String engFile = "English.txt";
     private final String vietFile = "Vietnamese.txt";
+    private final String searchMessage = "Enter word here to search!";
     WordList vietList, engList;
     DefaultListModel vietListModel;
     DefaultListModel engListModel;
     Word engWord, vietWord;
     boolean isChanged = false;
+    JFrame addNewPanel;
+    boolean isSearching = false;
 
     /**
      * Creates new form DictionaryApp
      */
     public DictionaryApp() {
+    }
+
+    public DictionaryApp(String title) {
         initComponents();
+        this.setTitle(title);
         engListModel = new DefaultListModel();
         vietListModel = new DefaultListModel();
         engList = new WordList();
@@ -45,6 +54,7 @@ public class DictionaryApp extends javax.swing.JFrame {
         tabPanel.setTitleAt(1, "Tiếng Việt - English");
         LoadEngData();
         LoadVietData();
+        this.txtSearch.setText(searchMessage);
 
     }
 
@@ -105,7 +115,7 @@ public class DictionaryApp extends javax.swing.JFrame {
             this.engWordList.setModel(engListModel);
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(rootPane, e);
+//            JOptionPane.showMessageDialog(rootPane, e);
         }
     }
 
@@ -134,7 +144,7 @@ public class DictionaryApp extends javax.swing.JFrame {
             Update(vietWord, "Vietnamese");
             this.vietWordList.setModel(vietListModel);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(rootPane, e);
+//            JOptionPane.showMessageDialog(rootPane, e);
         }
     }
 
@@ -191,6 +201,116 @@ public class DictionaryApp extends javax.swing.JFrame {
 
     }
 
+    public void addNew(int lang) {
+        StringTokenizer stk;
+        try {
+            List<String> means = new LinkedList<>();
+            List<String> newNameMean;
+
+            if (lang == 0) {
+                String word, mean;
+                word = StringUtils.capitalize(txtNewName.getText().toLowerCase().trim());
+                mean = txtNewMean.getText().trim();
+                System.out.println(word + mean);
+                if (LookUp(engWord, word) != null) {
+                    JOptionPane.showMessageDialog(rootPane, "This word is existed!");
+                    return;
+                }
+                if (word != null && mean != null) {
+                    stk = new StringTokenizer(mean, ",");
+                    while (stk.hasMoreTokens()) {
+                        means.add(StringUtils.capitalize(stk.nextToken().toLowerCase().trim()));
+                    }
+                    engList.Add(word, means);
+                    newNameMean = new LinkedList<>();
+                    newNameMean.add(word);
+                    String newName;
+                    for (int i = 0; i < means.size(); i++) {
+                        newName = means.get(i);
+                        Word newVietWord = LookUp(vietWord, newName);
+                        if (newVietWord == null) {
+                            vietList.Add(newName, newNameMean);
+                        }
+                        if (newVietWord != null) {
+                            newNameMean = newVietWord.getMeaning();
+                            newNameMean.add(word);
+                            newVietWord.setMeaning(newNameMean);
+                        }
+                    }
+                    isChanged = true;
+                    btnDelete.setEnabled(true);
+                    btnUpdate.setEnabled(true);
+                    UpdateUI();
+                    engWordList.setSelectedIndex(engWordList.getModel().getSize() - 1);
+                    engWordListMouseClicked(null);
+                }
+            }
+            if (lang == 1) {
+                String word, mean;
+                word = StringUtils.capitalize(txtNewName.getText().toLowerCase().trim());
+                mean = txtNewMean.getText().trim();
+                System.out.println(word);
+                if (LookUp(vietWord, word) != null) {
+                    JOptionPane.showMessageDialog(rootPane, "This word is existed!");
+                    return;
+                }
+                if (word != null && mean != null) {
+                    stk = new StringTokenizer(mean, ",");
+                    while (stk.hasMoreTokens()) {
+                        means.add(StringUtils.capitalize(stk.nextToken().toLowerCase().trim()));
+                    }
+                    vietList.Add(word, means);
+                    newNameMean = new LinkedList<>();
+                    newNameMean.add(word);
+                    String newName;
+                    for (int i = 0; i < means.size(); i++) {
+                        newName = means.get(i);
+                        Word newEngWord = LookUp(engWord, newName);
+                        if (newEngWord == null) {
+                            engList.Add(newName, newNameMean);
+                        }
+                        if (newEngWord != null) {
+                            newNameMean = newEngWord.getMeaning();
+                            newNameMean.add(word);
+                            newEngWord.setMeaning(newNameMean);
+                        }
+                    }
+                    isChanged = true;
+                    btnDelete.setEnabled(true);
+                    btnUpdate.setEnabled(true);
+                    UpdateUI();
+                    vietWordList.setSelectedIndex(vietWordList.getModel().getSize() - 1);
+                    vietWordListMouseClicked(null);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void searchEngList(Word root, String searchKey) {
+        if (root != null) {
+            if (root.getName().compareTo(searchKey) > 0) {
+                if (root.getName().contains(searchKey)) {
+                    engListModel.addElement(root.getName());
+                }
+                System.out.println(root.getName());
+                 searchEngList(root.getLeft(), searchKey);
+            }
+            if (root.getName().equals(searchKey)) {
+                if (root.getName().contains(searchKey)) {
+                    engListModel.addElement(root.getName());
+                }
+            }
+            if (root.getName().compareTo(searchKey) < 0) {
+                if (root.getName().contains(searchKey)) {
+                    engListModel.addElement(root.getName());
+                }
+                searchEngList(root.getRight(), searchKey);
+            }
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -200,6 +320,30 @@ public class DictionaryApp extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        newEngFrame = new javax.swing.JFrame();
+        jPanel1 = new javax.swing.JPanel();
+        wordPanel = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        txtNewName = new javax.swing.JTextField();
+        meanPanel = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        txtNewMean = new javax.swing.JTextArea();
+        buttonPanel = new javax.swing.JPanel();
+        btnAdd = new javax.swing.JButton();
+        btnCancel = new javax.swing.JButton();
+        newVietFrame = new javax.swing.JFrame();
+        jPanel2 = new javax.swing.JPanel();
+        wordPanel1 = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        txtNewName1 = new javax.swing.JTextField();
+        meanPanel1 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        txtNewMean1 = new javax.swing.JTextArea();
+        buttonPanel1 = new javax.swing.JPanel();
+        btnAdd1 = new javax.swing.JButton();
+        btnCancel1 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         topPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -208,6 +352,8 @@ public class DictionaryApp extends javax.swing.JFrame {
         btnExit = new javax.swing.JButton();
         btnDelete = new javax.swing.JButton();
         btnUpdate = new javax.swing.JButton();
+        searchPanel = new javax.swing.JPanel();
+        txtSearch = new javax.swing.JTextField();
         tabPanel = new javax.swing.JTabbedPane();
         engSplitPane = new javax.swing.JSplitPane();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -220,10 +366,144 @@ public class DictionaryApp extends javax.swing.JFrame {
         jScrollPane5 = new javax.swing.JScrollPane();
         vietWordList = new javax.swing.JList();
 
+        newEngFrame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        newEngFrame.setTitle("Enter a new English word!");
+        newEngFrame.setLocation(new java.awt.Point(0, 0));
+        newEngFrame.setResizable(false);
+        newEngFrame.setSize(new java.awt.Dimension(400, 300));
+
+        jPanel1.setMinimumSize(new java.awt.Dimension(370, 300));
+        jPanel1.setPreferredSize(new java.awt.Dimension(370, 265));
+        jPanel1.setLayout(new java.awt.BorderLayout());
+
+        wordPanel.setPreferredSize(new java.awt.Dimension(370, 40));
+
+        jLabel2.setFont(new java.awt.Font("Monospaced", 0, 18)); // NOI18N
+        jLabel2.setText("Word:");
+        jLabel2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jLabel2.setPreferredSize(new java.awt.Dimension(60, 30));
+        wordPanel.add(jLabel2);
+
+        txtNewName.setPreferredSize(new java.awt.Dimension(300, 30));
+        wordPanel.add(txtNewName);
+
+        jPanel1.add(wordPanel, java.awt.BorderLayout.NORTH);
+
+        meanPanel.setPreferredSize(new java.awt.Dimension(370, 150));
+
+        jLabel3.setFont(new java.awt.Font("Monospaced", 0, 18)); // NOI18N
+        jLabel3.setText("Meaning:");
+        jLabel3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jLabel3.setPreferredSize(new java.awt.Dimension(360, 30));
+        meanPanel.add(jLabel3);
+
+        jScrollPane3.setPreferredSize(new java.awt.Dimension(370, 100));
+
+        txtNewMean.setColumns(20);
+        txtNewMean.setRows(5);
+        txtNewMean.setPreferredSize(new java.awt.Dimension(360, 80));
+        jScrollPane3.setViewportView(txtNewMean);
+
+        meanPanel.add(jScrollPane3);
+
+        jPanel1.add(meanPanel, java.awt.BorderLayout.CENTER);
+
+        buttonPanel.setPreferredSize(new java.awt.Dimension(370, 60));
+        buttonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 10));
+
+        btnAdd.setText("Add");
+        btnAdd.setPreferredSize(new java.awt.Dimension(100, 40));
+        btnAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddActionPerformed(evt);
+            }
+        });
+        buttonPanel.add(btnAdd);
+
+        btnCancel.setText("Cancel");
+        btnCancel.setPreferredSize(new java.awt.Dimension(100, 40));
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelActionPerformed(evt);
+            }
+        });
+        buttonPanel.add(btnCancel);
+
+        jPanel1.add(buttonPanel, java.awt.BorderLayout.SOUTH);
+
+        newEngFrame.getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
+        jPanel1.getAccessibleContext().setAccessibleParent(this);
+
+        newVietFrame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        newVietFrame.setTitle("Enter a new Vietnamese word!");
+        newVietFrame.setResizable(false);
+        newVietFrame.setSize(new java.awt.Dimension(400, 300));
+
+        jPanel2.setMinimumSize(new java.awt.Dimension(370, 300));
+        jPanel2.setPreferredSize(new java.awt.Dimension(370, 265));
+        jPanel2.setLayout(new java.awt.BorderLayout());
+
+        wordPanel1.setPreferredSize(new java.awt.Dimension(370, 40));
+
+        jLabel4.setFont(new java.awt.Font("Monospaced", 0, 18)); // NOI18N
+        jLabel4.setText("Word:");
+        jLabel4.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jLabel4.setPreferredSize(new java.awt.Dimension(60, 30));
+        wordPanel1.add(jLabel4);
+
+        txtNewName1.setPreferredSize(new java.awt.Dimension(300, 30));
+        wordPanel1.add(txtNewName1);
+
+        jPanel2.add(wordPanel1, java.awt.BorderLayout.NORTH);
+
+        meanPanel1.setPreferredSize(new java.awt.Dimension(370, 150));
+
+        jLabel5.setFont(new java.awt.Font("Monospaced", 0, 18)); // NOI18N
+        jLabel5.setText("Meaning:");
+        jLabel5.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jLabel5.setPreferredSize(new java.awt.Dimension(360, 30));
+        meanPanel1.add(jLabel5);
+
+        jScrollPane6.setPreferredSize(new java.awt.Dimension(370, 100));
+
+        txtNewMean1.setColumns(20);
+        txtNewMean1.setRows(5);
+        txtNewMean1.setPreferredSize(new java.awt.Dimension(360, 80));
+        jScrollPane6.setViewportView(txtNewMean1);
+
+        meanPanel1.add(jScrollPane6);
+
+        jPanel2.add(meanPanel1, java.awt.BorderLayout.CENTER);
+
+        buttonPanel1.setPreferredSize(new java.awt.Dimension(370, 60));
+        buttonPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 10));
+
+        btnAdd1.setText("Add");
+        btnAdd1.setPreferredSize(new java.awt.Dimension(100, 40));
+        btnAdd1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAdd1ActionPerformed(evt);
+            }
+        });
+        buttonPanel1.add(btnAdd1);
+
+        btnCancel1.setText("Cancel");
+        btnCancel1.setPreferredSize(new java.awt.Dimension(100, 40));
+        btnCancel1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancel1ActionPerformed(evt);
+            }
+        });
+        buttonPanel1.add(btnCancel1);
+
+        jPanel2.add(buttonPanel1, java.awt.BorderLayout.SOUTH);
+
+        newVietFrame.getContentPane().add(jPanel2, java.awt.BorderLayout.CENTER);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Dictionary Application");
         setBackground(new java.awt.Color(204, 255, 255));
-        setLocation(new java.awt.Point(150, 150));
+        setLocation(new java.awt.Point(250, 200));
         setMinimumSize(new java.awt.Dimension(800, 600));
         setSize(new java.awt.Dimension(800, 600));
 
@@ -339,10 +619,32 @@ public class DictionaryApp extends javax.swing.JFrame {
         jPanel3.add(topPanel, java.awt.BorderLayout.NORTH);
         topPanel.getAccessibleContext().setAccessibleParent(jPanel3);
 
+        searchPanel.setPreferredSize(new java.awt.Dimension(720, 30));
+        searchPanel.setLayout(new java.awt.BorderLayout());
+
+        txtSearch.setText("Search");
+        txtSearch.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                txtSearchMouseClicked(evt);
+            }
+        });
+        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                txtSearchKeyPressed(evt);
+            }
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtSearchKeyReleased(evt);
+            }
+        });
+        searchPanel.add(txtSearch, java.awt.BorderLayout.CENTER);
+
+        jPanel3.add(searchPanel, java.awt.BorderLayout.CENTER);
+
         tabPanel.setBackground(new java.awt.Color(204, 255, 255));
         tabPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         tabPanel.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         tabPanel.setName(""); // NOI18N
+        tabPanel.setPreferredSize(new java.awt.Dimension(437, 450));
 
         engSplitPane.setDividerLocation(150);
         engSplitPane.setDividerSize(2);
@@ -388,7 +690,7 @@ public class DictionaryApp extends javax.swing.JFrame {
 
         tabPanel.addTab("tab2", vietSplitPane);
 
-        jPanel3.add(tabPanel, java.awt.BorderLayout.CENTER);
+        jPanel3.add(tabPanel, java.awt.BorderLayout.SOUTH);
         tabPanel.getAccessibleContext().setAccessibleName("tab");
 
         getContentPane().add(jPanel3, java.awt.BorderLayout.CENTER);
@@ -449,6 +751,7 @@ public class DictionaryApp extends javax.swing.JFrame {
             DeleteInMeaning(wordToFind.getRight(), wordSelecting, lang);
         }
     }
+
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         // TODO add your handling code here:
         if (vietListModel.isEmpty() && engListModel.isEmpty()) {
@@ -484,10 +787,11 @@ public class DictionaryApp extends javax.swing.JFrame {
             if (choice == JOptionPane.OK_OPTION) {
                 btnSaveActionPerformed(null);
                 System.exit(0);
-            }
-            if (choice == JOptionPane.NO_OPTION) {
+            } else if (choice == JOptionPane.NO_OPTION) {
                 System.exit(0);
             }
+        } else {
+            System.exit(0);
         }
     }//GEN-LAST:event_btnExitActionPerformed
 
@@ -512,89 +816,16 @@ public class DictionaryApp extends javax.swing.JFrame {
 
     private void btnNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNewActionPerformed
         // TODO add your handling code here:
-        StringTokenizer stk;
-        try {
-            List<String> means = new LinkedList<>();
-            List<String> newNameMean;
-            engWord = engList.getRoot();
-            vietWord = vietList.getRoot();
-            if (tabPanel.getSelectedIndex() == 0) {
-                String word, mean;
-                word = StringUtils.capitalize(JOptionPane.showInputDialog("Enter a new English word!").toLowerCase().trim());
-                mean = JOptionPane.showInputDialog("Enter meaning!").trim();
-                if (LookUp(engWord, word) != null) {
-                    JOptionPane.showMessageDialog(rootPane, "This word is existed!");
-                    return;
-                }
-                if (word != null && mean != null) {
-                    stk = new StringTokenizer(mean, ",");
-                    while (stk.hasMoreTokens()) {
-                        means.add(StringUtils.capitalize(stk.nextToken().toLowerCase().trim()));
-                    }
-                    engList.Add(word, means);
-                    newNameMean = new LinkedList<>();
-                    newNameMean.add(word);
-                    String newName;
-                    for (int i = 0; i < means.size(); i++) {
-                        newName = means.get(i);
-                        Word newVietWord = LookUp(vietWord, newName);
-                        if (newVietWord == null) {
-                            vietList.Add(newName, newNameMean);
-                        }
-                        if (newVietWord != null) {
-                            newNameMean = newVietWord.getMeaning();
-                            newNameMean.add(word);
-                            newVietWord.setMeaning(newNameMean);
-                        }
-                    }
-                    isChanged = true;
-                    btnDelete.setEnabled(true);
-                    btnUpdate.setEnabled(true);
-                }
-            }
-            if (tabPanel.getSelectedIndex() == 1) {
-                String word, mean;
-                word = StringUtils.capitalize(JOptionPane.showInputDialog("Enter a new Vietnamese word!").toLowerCase().trim());
-                mean = JOptionPane.showInputDialog("Enter meaning!").trim();
-                if (LookUp(vietWord, word) != null) {
-                    JOptionPane.showMessageDialog(rootPane, "This word is existed!");
-                    return;
-                }
-                if (word != null && mean != null) {
-                    stk = new StringTokenizer(mean, ",");
-                    while (stk.hasMoreTokens()) {
-                        means.add(StringUtils.capitalize(stk.nextToken().toLowerCase().trim()));
-                    }
-                    vietList.Add(word, means);
-                    newNameMean = new LinkedList<>();
-                    newNameMean.add(word);
-                    String newName;
-                    for (int i = 0; i < means.size(); i++) {
-                        newName = means.get(i);
-                        Word newEngWord = LookUp(engWord, newName);
-                        if (newEngWord == null) {
-                            engList.Add(newName, newNameMean);
-                        }
-                        if (newEngWord != null) {
-                            newNameMean = newEngWord.getMeaning();
-                            newNameMean.add(word);
-                            newEngWord.setMeaning(newNameMean);
-                        }
-                    }
-                    isChanged = true;
-                    btnDelete.setEnabled(true);
-                    btnUpdate.setEnabled(true);
-                }
-            }
-            UpdateUI();
-            engWordList.setSelectedIndex(engWordList.getModel().getSize() - 1);
-            engWordListMouseClicked(null);
-            vietWordList.setSelectedIndex(vietWordList.getModel().getSize() - 1);
-            vietWordListMouseClicked(null);
-        } catch (Exception e) {
-            e.printStackTrace();
+        engWord = engList.getRoot();
+        vietWord = vietList.getRoot();
+        if (tabPanel.getSelectedIndex() == 0) {
+            newEngFrame.setLocationRelativeTo(this);
+            newEngFrame.setVisible(true);
         }
-
+        if (tabPanel.getSelectedIndex() == 1) {
+            newVietFrame.setLocationRelativeTo(this);
+            newVietFrame.setVisible(true);
+        }
     }//GEN-LAST:event_btnNewActionPerformed
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
@@ -656,6 +887,70 @@ public class DictionaryApp extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnUpdateActionPerformed
 
+    private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
+        // TODO add your handling code here:
+        if (tabPanel.getSelectedIndex() == 0) {
+            addNew(0);
+            newEngFrame.dispose();
+        }
+        if (tabPanel.getSelectedIndex() == 1) {
+            addNew(1);
+            newVietFrame.dispose();
+        }
+    }//GEN-LAST:event_btnAddActionPerformed
+
+    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+        // TODO add your handling code here:
+        if (tabPanel.getSelectedIndex() == 0) {
+            newEngFrame.dispose();
+        }
+        if (tabPanel.getSelectedIndex() == 1) {
+            newVietFrame.dispose();
+        }
+    }//GEN-LAST:event_btnCancelActionPerformed
+
+    private void btnAdd1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdd1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnAdd1ActionPerformed
+
+    private void btnCancel1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancel1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnCancel1ActionPerformed
+
+    private void txtSearchMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtSearchMouseClicked
+        // TODO add your handling code here:
+        if (this.txtSearch.getText().equals(searchMessage)) {
+            this.txtSearch.setText("");
+        }
+    }//GEN-LAST:event_txtSearchMouseClicked
+
+    private void txtSearchKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyReleased
+        // TODO add your handling code here:
+        if (this.txtSearch.getText().isEmpty()) {
+            this.txtSearch.setText(searchMessage);
+            UpdateUI();
+        } else {
+            String searchWord = StringUtils.capitalize(this.txtSearch.getText().trim().toLowerCase());
+            if (tabPanel.getSelectedIndex() == 0) {
+                engListModel.clear();
+                Word current = engList.getRoot();
+                searchEngList(current, searchWord);
+                engWordList.setModel(engListModel);
+            }
+            if (tabPanel.getSelectedIndex() == 1) {
+
+            }
+        }
+
+    }//GEN-LAST:event_txtSearchKeyReleased
+
+    private void txtSearchKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyPressed
+        // TODO add your handling code here:
+        if (this.txtSearch.getText().equals(searchMessage)) {
+            this.txtSearch.setText("");
+        }
+    }//GEN-LAST:event_txtSearchKeyPressed
+
     /**
      * @param args the command line arguments
      */
@@ -686,30 +981,56 @@ public class DictionaryApp extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new DictionaryApp().setVisible(true);
+                new DictionaryApp("Dictionary Application").setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAdd;
+    private javax.swing.JButton btnAdd1;
+    private javax.swing.JButton btnCancel;
+    private javax.swing.JButton btnCancel1;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnNew;
     private javax.swing.JButton btnSave;
     private javax.swing.JButton btnUpdate;
+    private javax.swing.JPanel buttonPanel;
+    private javax.swing.JPanel buttonPanel1;
     private javax.swing.JTextArea engMeanArea;
     private javax.swing.JSplitPane engSplitPane;
     private javax.swing.JList engWordList;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JPanel meanPanel;
+    private javax.swing.JPanel meanPanel1;
+    private javax.swing.JFrame newEngFrame;
+    private javax.swing.JFrame newVietFrame;
+    private javax.swing.JPanel searchPanel;
     private javax.swing.JTabbedPane tabPanel;
     private javax.swing.JPanel topPanel;
+    private javax.swing.JTextArea txtNewMean;
+    private javax.swing.JTextArea txtNewMean1;
+    private javax.swing.JTextField txtNewName;
+    private javax.swing.JTextField txtNewName1;
+    private javax.swing.JTextField txtSearch;
     private javax.swing.JTextArea vietMeanArea;
     private javax.swing.JSplitPane vietSplitPane;
     private javax.swing.JList vietWordList;
+    private javax.swing.JPanel wordPanel;
+    private javax.swing.JPanel wordPanel1;
     // End of variables declaration//GEN-END:variables
 }

@@ -1,0 +1,3 @@
+Apple:Táo
+Cat:Mèo
+Dog:Chó

@@ -1,6 +1,7 @@
 
 import com.sun.xml.internal.ws.util.StringUtils;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -209,9 +210,8 @@ public class DictionaryApp extends javax.swing.JFrame {
 
             if (lang == 0) {
                 String word, mean;
-                word = StringUtils.capitalize(txtNewName.getText().toLowerCase().trim());
-                mean = txtNewMean.getText().trim();
-                System.out.println(word + mean);
+                word = StringUtils.capitalize(txtNewEngName.getText().toLowerCase().trim());
+                mean = txtNewEngMean.getText().trim();
                 if (LookUp(engWord, word) != null) {
                     JOptionPane.showMessageDialog(rootPane, "This word is existed!");
                     return;
@@ -247,8 +247,8 @@ public class DictionaryApp extends javax.swing.JFrame {
             }
             if (lang == 1) {
                 String word, mean;
-                word = StringUtils.capitalize(txtNewName.getText().toLowerCase().trim());
-                mean = txtNewMean.getText().trim();
+                word = StringUtils.capitalize(txtNewVietName.getText().toLowerCase().trim());
+                mean = txtNewVietMean.getText().trim();
                 System.out.println(word);
                 if (LookUp(vietWord, word) != null) {
                     JOptionPane.showMessageDialog(rootPane, "This word is existed!");
@@ -295,7 +295,7 @@ public class DictionaryApp extends javax.swing.JFrame {
                     engListModel.addElement(root.getName());
                 }
                 System.out.println(root.getName());
-                 searchEngList(root.getLeft(), searchKey);
+                searchEngList(root.getLeft(), searchKey);
             }
             if (root.getName().equals(searchKey)) {
                 if (root.getName().contains(searchKey)) {
@@ -305,6 +305,29 @@ public class DictionaryApp extends javax.swing.JFrame {
             if (root.getName().compareTo(searchKey) < 0) {
                 if (root.getName().contains(searchKey)) {
                     engListModel.addElement(root.getName());
+                }
+                searchEngList(root.getRight(), searchKey);
+            }
+        }
+    }
+
+    private void searchVietList(Word root, String searchKey) {
+        if (root != null) {
+            if (root.getName().compareTo(searchKey) > 0) {
+                if (root.getName().contains(searchKey)) {
+                    vietListModel.addElement(root.getName());
+                }
+                System.out.println(root.getName());
+                searchEngList(root.getLeft(), searchKey);
+            }
+            if (root.getName().equals(searchKey)) {
+                if (root.getName().contains(searchKey)) {
+                    vietListModel.addElement(root.getName());
+                }
+            }
+            if (root.getName().compareTo(searchKey) < 0) {
+                if (root.getName().contains(searchKey)) {
+                    vietListModel.addElement(root.getName());
                 }
                 searchEngList(root.getRight(), searchKey);
             }
@@ -324,26 +347,26 @@ public class DictionaryApp extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         wordPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        txtNewName = new javax.swing.JTextField();
+        txtNewEngName = new javax.swing.JTextField();
         meanPanel = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        txtNewMean = new javax.swing.JTextArea();
+        txtNewEngMean = new javax.swing.JTextArea();
         buttonPanel = new javax.swing.JPanel();
-        btnAdd = new javax.swing.JButton();
-        btnCancel = new javax.swing.JButton();
+        btnAddEng = new javax.swing.JButton();
+        btnCancelEng = new javax.swing.JButton();
         newVietFrame = new javax.swing.JFrame();
         jPanel2 = new javax.swing.JPanel();
         wordPanel1 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
-        txtNewName1 = new javax.swing.JTextField();
+        txtNewVietName = new javax.swing.JTextField();
         meanPanel1 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jScrollPane6 = new javax.swing.JScrollPane();
-        txtNewMean1 = new javax.swing.JTextArea();
+        txtNewVietMean = new javax.swing.JTextArea();
         buttonPanel1 = new javax.swing.JPanel();
-        btnAdd1 = new javax.swing.JButton();
-        btnCancel1 = new javax.swing.JButton();
+        btnAddViet = new javax.swing.JButton();
+        btnCancelViet = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         topPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -384,8 +407,8 @@ public class DictionaryApp extends javax.swing.JFrame {
         jLabel2.setPreferredSize(new java.awt.Dimension(60, 30));
         wordPanel.add(jLabel2);
 
-        txtNewName.setPreferredSize(new java.awt.Dimension(300, 30));
-        wordPanel.add(txtNewName);
+        txtNewEngName.setPreferredSize(new java.awt.Dimension(300, 30));
+        wordPanel.add(txtNewEngName);
 
         jPanel1.add(wordPanel, java.awt.BorderLayout.NORTH);
 
@@ -399,10 +422,10 @@ public class DictionaryApp extends javax.swing.JFrame {
 
         jScrollPane3.setPreferredSize(new java.awt.Dimension(370, 100));
 
-        txtNewMean.setColumns(20);
-        txtNewMean.setRows(5);
-        txtNewMean.setPreferredSize(new java.awt.Dimension(360, 80));
-        jScrollPane3.setViewportView(txtNewMean);
+        txtNewEngMean.setColumns(20);
+        txtNewEngMean.setRows(5);
+        txtNewEngMean.setPreferredSize(new java.awt.Dimension(360, 80));
+        jScrollPane3.setViewportView(txtNewEngMean);
 
         meanPanel.add(jScrollPane3);
 
@@ -411,23 +434,23 @@ public class DictionaryApp extends javax.swing.JFrame {
         buttonPanel.setPreferredSize(new java.awt.Dimension(370, 60));
         buttonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 10));
 
-        btnAdd.setText("Add");
-        btnAdd.setPreferredSize(new java.awt.Dimension(100, 40));
-        btnAdd.addActionListener(new java.awt.event.ActionListener() {
+        btnAddEng.setText("Add");
+        btnAddEng.setPreferredSize(new java.awt.Dimension(100, 40));
+        btnAddEng.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddActionPerformed(evt);
+                btnAddEngActionPerformed(evt);
             }
         });
-        buttonPanel.add(btnAdd);
+        buttonPanel.add(btnAddEng);
 
-        btnCancel.setText("Cancel");
-        btnCancel.setPreferredSize(new java.awt.Dimension(100, 40));
-        btnCancel.addActionListener(new java.awt.event.ActionListener() {
+        btnCancelEng.setText("Cancel");
+        btnCancelEng.setPreferredSize(new java.awt.Dimension(100, 40));
+        btnCancelEng.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCancelActionPerformed(evt);
+                btnCancelEngActionPerformed(evt);
             }
         });
-        buttonPanel.add(btnCancel);
+        buttonPanel.add(btnCancelEng);
 
         jPanel1.add(buttonPanel, java.awt.BorderLayout.SOUTH);
 
@@ -451,8 +474,8 @@ public class DictionaryApp extends javax.swing.JFrame {
         jLabel4.setPreferredSize(new java.awt.Dimension(60, 30));
         wordPanel1.add(jLabel4);
 
-        txtNewName1.setPreferredSize(new java.awt.Dimension(300, 30));
-        wordPanel1.add(txtNewName1);
+        txtNewVietName.setPreferredSize(new java.awt.Dimension(300, 30));
+        wordPanel1.add(txtNewVietName);
 
         jPanel2.add(wordPanel1, java.awt.BorderLayout.NORTH);
 
@@ -466,10 +489,10 @@ public class DictionaryApp extends javax.swing.JFrame {
 
         jScrollPane6.setPreferredSize(new java.awt.Dimension(370, 100));
 
-        txtNewMean1.setColumns(20);
-        txtNewMean1.setRows(5);
-        txtNewMean1.setPreferredSize(new java.awt.Dimension(360, 80));
-        jScrollPane6.setViewportView(txtNewMean1);
+        txtNewVietMean.setColumns(20);
+        txtNewVietMean.setRows(5);
+        txtNewVietMean.setPreferredSize(new java.awt.Dimension(360, 80));
+        jScrollPane6.setViewportView(txtNewVietMean);
 
         meanPanel1.add(jScrollPane6);
 
@@ -478,23 +501,23 @@ public class DictionaryApp extends javax.swing.JFrame {
         buttonPanel1.setPreferredSize(new java.awt.Dimension(370, 60));
         buttonPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 10));
 
-        btnAdd1.setText("Add");
-        btnAdd1.setPreferredSize(new java.awt.Dimension(100, 40));
-        btnAdd1.addActionListener(new java.awt.event.ActionListener() {
+        btnAddViet.setText("Add");
+        btnAddViet.setPreferredSize(new java.awt.Dimension(100, 40));
+        btnAddViet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAdd1ActionPerformed(evt);
+                btnAddVietActionPerformed(evt);
             }
         });
-        buttonPanel1.add(btnAdd1);
+        buttonPanel1.add(btnAddViet);
 
-        btnCancel1.setText("Cancel");
-        btnCancel1.setPreferredSize(new java.awt.Dimension(100, 40));
-        btnCancel1.addActionListener(new java.awt.event.ActionListener() {
+        btnCancelViet.setText("Cancel");
+        btnCancelViet.setPreferredSize(new java.awt.Dimension(100, 40));
+        btnCancelViet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCancel1ActionPerformed(evt);
+                btnCancelVietActionPerformed(evt);
             }
         });
-        buttonPanel1.add(btnCancel1);
+        buttonPanel1.add(btnCancelViet);
 
         jPanel2.add(buttonPanel1, java.awt.BorderLayout.SOUTH);
 
@@ -623,6 +646,11 @@ public class DictionaryApp extends javax.swing.JFrame {
         searchPanel.setLayout(new java.awt.BorderLayout());
 
         txtSearch.setText("Search");
+        txtSearch.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtSearchFocusLost(evt);
+            }
+        });
         txtSearch.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 txtSearchMouseClicked(evt);
@@ -887,35 +915,29 @@ public class DictionaryApp extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnUpdateActionPerformed
 
-    private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
+    private void btnAddEngActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddEngActionPerformed
         // TODO add your handling code here:
-        if (tabPanel.getSelectedIndex() == 0) {
-            addNew(0);
-            newEngFrame.dispose();
-        }
-        if (tabPanel.getSelectedIndex() == 1) {
-            addNew(1);
-            newVietFrame.dispose();
-        }
-    }//GEN-LAST:event_btnAddActionPerformed
+        addNew(0);
+        newEngFrame.dispose();
+    }//GEN-LAST:event_btnAddEngActionPerformed
 
-    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+    private void btnCancelEngActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelEngActionPerformed
         // TODO add your handling code here:
-        if (tabPanel.getSelectedIndex() == 0) {
-            newEngFrame.dispose();
-        }
-        if (tabPanel.getSelectedIndex() == 1) {
-            newVietFrame.dispose();
-        }
-    }//GEN-LAST:event_btnCancelActionPerformed
+        newEngFrame.dispose();
 
-    private void btnAdd1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdd1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnAdd1ActionPerformed
+    }//GEN-LAST:event_btnCancelEngActionPerformed
 
-    private void btnCancel1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancel1ActionPerformed
+    private void btnAddVietActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddVietActionPerformed
+        // TODO add your handling code here
+        addNew(1);
+        newVietFrame.dispose();
+    }//GEN-LAST:event_btnAddVietActionPerformed
+
+    private void btnCancelVietActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelVietActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_btnCancel1ActionPerformed
+        newVietFrame.dispose();
+
+    }//GEN-LAST:event_btnCancelVietActionPerformed
 
     private void txtSearchMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtSearchMouseClicked
         // TODO add your handling code here:
@@ -927,8 +949,30 @@ public class DictionaryApp extends javax.swing.JFrame {
     private void txtSearchKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyReleased
         // TODO add your handling code here:
         if (this.txtSearch.getText().isEmpty()) {
-            this.txtSearch.setText(searchMessage);
-            UpdateUI();
+            if (evt.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+                UpdateUI();
+                if (engWordList.getModel().getSize() > 0) {
+                    engWordList.setSelectedIndex(0);
+                    engWordListMouseClicked(null);
+                }
+                if (vietWordList.getModel().getSize() > 0) {
+                    vietWordList.setSelectedIndex(vietWordList.getModel().getSize() - 1);
+                    vietWordListMouseClicked(null);
+                }
+            } else {
+                this.txtSearch.setText(searchMessage);
+                UpdateUI();
+                if (engWordList.getModel().getSize() > 0) {
+                    engWordList.setSelectedIndex(0);
+                    engWordListMouseClicked(null);
+                }
+                if (vietWordList.getModel().getSize() > 0) {
+                    vietWordList.setSelectedIndex(0);
+                    vietWordListMouseClicked(null);
+                }
+
+            }
+
         } else {
             String searchWord = StringUtils.capitalize(this.txtSearch.getText().trim().toLowerCase());
             if (tabPanel.getSelectedIndex() == 0) {
@@ -936,12 +980,24 @@ public class DictionaryApp extends javax.swing.JFrame {
                 Word current = engList.getRoot();
                 searchEngList(current, searchWord);
                 engWordList.setModel(engListModel);
+                if (engWordList.getModel().getSize() > 0) {
+                    engWordList.setSelectedIndex(0);
+                    engWordListMouseClicked(null);
+                }
+
             }
             if (tabPanel.getSelectedIndex() == 1) {
-
+                vietListModel.clear();
+                Word current = vietList.getRoot();
+                searchEngList(current, searchWord);
+                vietWordList.setModel(vietListModel);
+                if (vietWordList.getModel().getSize() > 0) {
+                    vietWordList.setSelectedIndex(0);
+                    vietWordListMouseClicked(null);
+                }
             }
-        }
 
+        }
     }//GEN-LAST:event_txtSearchKeyReleased
 
     private void txtSearchKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyPressed
@@ -949,7 +1005,15 @@ public class DictionaryApp extends javax.swing.JFrame {
         if (this.txtSearch.getText().equals(searchMessage)) {
             this.txtSearch.setText("");
         }
+
     }//GEN-LAST:event_txtSearchKeyPressed
+
+    private void txtSearchFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtSearchFocusLost
+        // TODO add your handling code here:
+        if (this.txtSearch.getText().isEmpty()) {
+            this.txtSearch.setText(searchMessage);
+        }
+    }//GEN-LAST:event_txtSearchFocusLost
 
     /**
      * @param args the command line arguments
@@ -987,10 +1051,10 @@ public class DictionaryApp extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnAdd;
-    private javax.swing.JButton btnAdd1;
-    private javax.swing.JButton btnCancel;
-    private javax.swing.JButton btnCancel1;
+    private javax.swing.JButton btnAddEng;
+    private javax.swing.JButton btnAddViet;
+    private javax.swing.JButton btnCancelEng;
+    private javax.swing.JButton btnCancelViet;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnNew;
@@ -1022,10 +1086,10 @@ public class DictionaryApp extends javax.swing.JFrame {
     private javax.swing.JPanel searchPanel;
     private javax.swing.JTabbedPane tabPanel;
     private javax.swing.JPanel topPanel;
-    private javax.swing.JTextArea txtNewMean;
-    private javax.swing.JTextArea txtNewMean1;
-    private javax.swing.JTextField txtNewName;
-    private javax.swing.JTextField txtNewName1;
+    private javax.swing.JTextArea txtNewEngMean;
+    private javax.swing.JTextField txtNewEngName;
+    private javax.swing.JTextArea txtNewVietMean;
+    private javax.swing.JTextField txtNewVietName;
     private javax.swing.JTextField txtSearch;
     private javax.swing.JTextArea vietMeanArea;
     private javax.swing.JSplitPane vietSplitPane;

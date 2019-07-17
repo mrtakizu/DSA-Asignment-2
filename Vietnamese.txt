@@ -1,4 +1,5 @@
-Chó:Dog,Dog
+Chó:Dog
 Khuyển:Dog
 Mèo:Cat
+Tham vọng:Ambition
 Táo:Apple

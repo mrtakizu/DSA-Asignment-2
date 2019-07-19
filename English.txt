@@ -1,4 +1,2 @@
-Ambition:Tham vọng
-Apple:Táo
-Cat:Mèo
+Apple:Táo mỹ,Bom
 Dog:Chó,Khuyển

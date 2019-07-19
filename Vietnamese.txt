@@ -1,5 +1,4 @@
+Bom:Apple
 Chó:Dog
 Khuyển:Dog
-Mèo:Cat
-Tham vọng:Ambition
-Táo:Apple
+Táo mỹ:Apple

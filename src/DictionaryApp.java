@@ -249,7 +249,6 @@ public class DictionaryApp extends javax.swing.JFrame {
                 String word, mean;
                 word = StringUtils.capitalize(txtNewVietName.getText().toLowerCase().trim());
                 mean = txtNewVietMean.getText().trim();
-                System.out.println(word);
                 if (LookUp(vietWord, word) != null) {
                     JOptionPane.showMessageDialog(rootPane, "This word is existed!");
                     return;
@@ -294,7 +293,6 @@ public class DictionaryApp extends javax.swing.JFrame {
                 if (root.getName().contains(searchKey)) {
                     engListModel.addElement(root.getName());
                 }
-                System.out.println(root.getName());
                 searchEngList(root.getLeft(), searchKey);
             }
             if (root.getName().equals(searchKey)) {
@@ -317,7 +315,6 @@ public class DictionaryApp extends javax.swing.JFrame {
                 if (root.getName().contains(searchKey)) {
                     vietListModel.addElement(root.getName());
                 }
-                System.out.println(root.getName());
                 searchEngList(root.getLeft(), searchKey);
             }
             if (root.getName().equals(searchKey)) {
@@ -689,6 +686,11 @@ public class DictionaryApp extends javax.swing.JFrame {
                 engWordListMouseClicked(evt);
             }
         });
+        engWordList.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                engWordListKeyReleased(evt);
+            }
+        });
         jScrollPane1.setViewportView(engWordList);
 
         engSplitPane.setLeftComponent(jScrollPane1);
@@ -710,6 +712,11 @@ public class DictionaryApp extends javax.swing.JFrame {
         vietWordList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 vietWordListMouseClicked(evt);
+            }
+        });
+        vietWordList.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                vietWordListKeyReleased(evt);
             }
         });
         jScrollPane5.setViewportView(vietWordList);
@@ -735,8 +742,6 @@ public class DictionaryApp extends javax.swing.JFrame {
             }
             String engWordSelecting = String.valueOf(engWordList.getSelectedValue());
             vietMeanArea.setText(LookUp(engWord, engWordSelecting).getMeaningString());
-            System.out.println(engListModel.getSize());
-            System.out.println(engWordList.getSelectedIndex());
 
         } catch (Exception e) {
             System.out.println(e);
@@ -870,7 +875,7 @@ public class DictionaryApp extends javax.swing.JFrame {
         if (mean != null) {
             stk = new StringTokenizer(mean, ",");
             while (stk.hasMoreTokens()) {
-                means.add(stk.nextToken().trim());
+               means.add(StringUtils.capitalize(stk.nextToken().trim()));
             }
             String vietWordSelecting = String.valueOf(vietWordList.getSelectedValue());
             String engWordSelecting = String.valueOf(engWordList.getSelectedValue());
@@ -1014,6 +1019,20 @@ public class DictionaryApp extends javax.swing.JFrame {
             this.txtSearch.setText(searchMessage);
         }
     }//GEN-LAST:event_txtSearchFocusLost
+
+    private void engWordListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_engWordListKeyReleased
+        // TODO add your handling code here:
+        if(evt.getKeyCode() == KeyEvent.VK_UP ||evt.getKeyCode() == KeyEvent.VK_DOWN){
+            engWordListMouseClicked(null);
+        }
+    }//GEN-LAST:event_engWordListKeyReleased
+
+    private void vietWordListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_vietWordListKeyReleased
+        // TODO add your handling code here:
+         if(evt.getKeyCode() == KeyEvent.VK_UP ||evt.getKeyCode() == KeyEvent.VK_DOWN){
+            vietWordListMouseClicked(null);
+        }
+    }//GEN-LAST:event_vietWordListKeyReleased
 
     /**
      * @param args the command line arguments
